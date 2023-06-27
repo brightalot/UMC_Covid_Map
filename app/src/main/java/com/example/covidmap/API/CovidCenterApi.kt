@@ -1,4 +1,4 @@
-package com.example.covidmap
+package com.example.covidmap.API
 
 class CovidCenterApi {
     companion object {

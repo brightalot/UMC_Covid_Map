@@ -1,4 +1,4 @@
-package com.example.covidmap
+package com.example.covidmap.Data
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -10,6 +10,6 @@ interface CovidCenterDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCovidCenter(covidCenterData: CovidCenterData)
 
-    @Query("DELETE FROM CovidCenterData")
+    @Query("DELETE FROM CenterData")
     suspend fun deleteCovidCenter()
 }

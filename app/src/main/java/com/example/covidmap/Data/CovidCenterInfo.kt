@@ -1,4 +1,4 @@
-package com.example.covidmap
+package com.example.covidmap.Data
 
 data class CovidCentersInfo(
     val totalCount: Int,

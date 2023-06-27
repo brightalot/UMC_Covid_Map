@@ -1,6 +1,6 @@
-package com.example.covidmap
+package com.example.covidmap.API
 
-import com.example.covidmap.CovidCentersInfo
+import com.example.covidmap.Data.CovidCentersInfo
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Header

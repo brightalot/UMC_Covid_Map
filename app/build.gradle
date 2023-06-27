@@ -4,6 +4,7 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 
     id 'kotlin-kapt'
+    id("com.google.dagger.hilt.android") version "2.44" apply false
 }
 
 android {
@@ -36,9 +37,14 @@ android {
     buildFeatures {
         viewBinding true
     }
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
+    implementation("com.google.dagger:hilt-android:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
     implementation("androidx.room:room-ktx:2.5.1")
     implementation("androidx.room:room-runtime:2.5.1")
     kapt("androidx.room:room-compiler:2.5.1")
