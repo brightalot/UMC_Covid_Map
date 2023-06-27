@@ -1,50 +1,54 @@
-package com.example.covidmap.activity
+package com.example.covidmap.Splash
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
-import com.example.covidmap.ApiInterface
-import com.example.covidmap.CovidCenterApi
-import com.example.covidmap.CovidCenterData
-import com.example.covidmap.CovidCentersInfo
+import com.example.covidmap.*
+import com.example.covidmap.Data.CovidCenterDB
 import com.example.covidmap.databinding.ActivitySplashBinding
-import com.example.covidmap.CovidCenterDB
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Thread.sleep
 import kotlin.concurrent.timer
 
 class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
-
+    private lateinit var splashViewModel: SplashViewModel
+    private lateinit var toastManager: ToastManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        splashViewModel = ViewModelProvider(this).get(SplashViewModel::class.java)
+
         val db = Room.databaseBuilder(
             this,
-            CovidCenterDB::class.java, "CovidCenterData"
+            CovidCenterDB::class.java, "CenterData"
         ).build()
-
+        toastManager = ToastManager(this)
         GlobalScope.launch {
             db.covidCenterDAO().deleteCovidCenter()
             var loadCenterFinish = false
             var progress = 0
             val loadCenter = async {
                 for (page in 1..10) {
-                    loadCenters(page)
+                    splashViewModel.loadCenters(
+                        page,
+                        onFail = {
+                            toastManager.makeToast("실패")
+                        },
+                        onSuccess = {
+                            toastManager.makeToast("성공")
+                        }
+                    )
                         .forEach {
                             db.covidCenterDAO()
                                 .insertCovidCenter(it)
@@ -78,27 +82,7 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadCenters(page: Int): ArrayList<CovidCenterData>{
-        val data = arrayListOf<CovidCenterData>()
-        val retrofit = Retrofit.Builder()
-            .baseUrl(CovidCenterApi.DOMAIN)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val service: ApiInterface = retrofit.create(ApiInterface::class.java)
-        service.loadCenterRequest(CovidCenterApi.API_AUTH_KEY, CovidCenterApi.API_KEY, page, 10)
-            .enqueue(object : Callback<CovidCentersInfo> {
-            override fun onFailure(call: Call<CovidCentersInfo>, t: Throwable) {
-                Toast.makeText(applicationContext, "실패", Toast.LENGTH_SHORT).show()
-            }
-            override fun onResponse(call: Call<CovidCentersInfo>, response: Response<CovidCentersInfo>) {
-                Toast.makeText(applicationContext, "성공", Toast.LENGTH_SHORT).show()
-                for (res in response.body()?.data!!){
-                    println("$res")
-                    data.add(res)
-                }
-            }
-        })
-        return data
+    private fun _makeToast(msg : String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 }
